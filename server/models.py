@@ -11,6 +11,14 @@ class Apartment(db.Model, SerializerMixin):
     number = db.Column(db.String(10))
     tenants = db.relationship('Tenant', backref='apartment', cascade='all, delete-orphan')
     lease = db.relationship('Lease', backref='apartment', uselist=False, cascade='all, delete-orphan')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'number': self.number,
+            'tenants': [tenant.to_dict() for tenant in self.tenants],
+            'lease': self.lease.to_dict() if self.lease else None
+        }
     
 class Tenant(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -18,6 +26,14 @@ class Tenant(db.Model, SerializerMixin):
     age = db.Column(db.Integer)
     apartment_id = db.Column(db.Integer, db.ForeignKey('apartment.id'))
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'age': self.age,
+            'apartment_id': self.apartment_id
+        }
+    
     @validates('age')
     def validate_age(self, key, age):
         if age < 18:
@@ -28,3 +44,10 @@ class Lease(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     rent = db.Column(db.Float)
     apartment_id = db.Column(db.Integer, db.ForeignKey('apartment.id'))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'rent': self.rent,
+            'apartment_id': self.apartment_id
+        }
